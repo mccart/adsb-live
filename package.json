@@ -10,22 +10,17 @@
   "scripts": {
     "precommit": "lint-staged",
     "build-docs": "esdoc",
-    "test": "npm run lint && ava",
+    "test": "ava 'src/**/*.test.js'",
     "test:watch": "ava -w",
     "coverage": "nyc ava",
     "coverage:html": "nyc ava && nyc report --reporter=html",
     "coveralls": "npm test && nyc report --reporter=text-lcov | coveralls"
   },
   "lint-staged": {
-    "*.{js}": [
+    "*.js": [
       "prettier --write",
       "eslint --fix",
-      "test",
-      "build-docs",
       "git add"
-    ],
-    "*.scss": [
-      "stylelint --syntax=scss"
     ]
   },
   "engines": {
