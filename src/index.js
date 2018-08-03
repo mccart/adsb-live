@@ -2,36 +2,22 @@ const net = require("net");
 const oboe = require("oboe");
 const Rx = require("rxjs/Rx");
 
-const adsbConnect = ({
+module.exports = ({
   host = "pub-vrs.adsbexchange.com",
-  port = 32015
+  port = 32015,
+  socketFactory = net.Socket
 } = {}) => {
   return new Rx.Observable(observer => {
-    const socket = new net.Socket();
+    const socket = new socketFactory();
     socket.on("error", err => observer.error(err));
     socket.on("close", () => observer.error("Socket closed unexpectedly"));
-    socket.connect({ host, port });
     oboe(socket)
-      .on("fail", () => observer.error("Parse error"))
+      .on("fail", err => observer.error(err))
       .on("node", {
         "!": data => observer.next(data.acList)
       });
+    socket.connect({ host, port });
+    console.log(socket);
     return () => socket.destroy();
   });
 };
-
-const subject = adsbConnect()
-  .retryWhen(errors => {
-    console.log("Reconnecting...");
-    return errors.delay(1000);
-  })
-  .share();
-
-const subscription = subject.subscribe(
-  updates => console.log("Parsed", updates.length, "items"),
-  error => console.log("Error", error),
-  () => console.log("Complete")
-);
-
-console.log("Subscribed");
-setTimeout(() => subscription.unsubscribe(), 10000);
