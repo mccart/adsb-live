@@ -1,4 +1,4 @@
-const net = require("net")
+  const net = require("net")
 const oboe = require("oboe")
 const Rx = require("rxjs/Rx")
 
