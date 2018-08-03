@@ -1,6 +1,6 @@
 const net = require("net")
   const oboe = require("oboe")
-const Rx = require("rxjs/Rx")
+  const Rx = require("rxjs/Rx")
 
 const adsbConnect = ({
   host = "pub-vrs.adsbexchange.com",
