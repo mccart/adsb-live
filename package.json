@@ -8,16 +8,27 @@
     "type": "git"
   },
   "scripts": {
-    "precommit": "pretty-quick --staged && npm run lint && npm run test",
-    "lint": "eslint \"./src/**/*.js\" \"./test/**/*.js\"",
-    "lint:fix": "eslint --fix  \"./src/**/*.js\" \"./test/**/*.js\"",
-    "format": "pretty-quick",
+    "precommit": "lint-staged",
+    "build-docs": "esdoc",
     "test": "npm run lint && ava",
     "test:watch": "ava -w",
     "coverage": "nyc ava",
     "coverage:html": "nyc ava && nyc report --reporter=html",
     "coveralls": "npm test && nyc report --reporter=text-lcov | coveralls"
   },
+  "lint-staged": {
+    "*.{js}": [
+      "prettier --write",
+      "eslint --fix",
+      "test",
+      "build-docs",
+      "git add"
+    ],
+    "*.scss": [
+      "stylelint --syntax=scss"
+    ]
+  },
+
   "engines": {
     "node": ">=8"
   },
