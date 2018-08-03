@@ -28,7 +28,6 @@
       "stylelint --syntax=scss"
     ]
   },
-
   "engines": {
     "node": ">=8"
   },
@@ -48,6 +47,7 @@
     "coveralls": "^3.0.1",
     "eslint-config-hemera": "^0.0.6",
     "husky": "^0.14.3",
+    "lint-staged": "^7.2.0",
     "np": "^3.0.1",
     "nyc": "^11.8.0",
     "prettier-standard": "^8.0.1",
