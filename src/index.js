@@ -1,23 +1,56 @@
-const net = require("net");
-const oboe = require("oboe");
-const Rx = require("rxjs/Rx");
+import express from "express";
+import bodyParser from "body-parser";
+import cors from "cors";
+import glue from "schemaglue";
+import { execute, subscribe } from "graphql";
+import { createServer } from "http";
+import { SubscriptionServer } from "subscriptions-transport-ws";
+import { makeExecutableSchema, addMockFunctionsToSchema } from "graphql-tools";
+import { graphqlExpress, graphiqlExpress } from "graphql-server-express";
 
-module.exports = ({
-  host = "pub-vrs.adsbexchange.com",
-  port = 32015,
-  socketFactory = net.Socket
-} = {}) => {
-  return new Rx.Observable(observer => {
-    const socket = new socketFactory();
-    socket.on("error", err => observer.error(err));
-    socket.on("close", () => observer.error("Socket closed unexpectedly"));
-    oboe(socket)
-      .on("fail", err => observer.error(err))
-      .on("node", {
-        "!": data => observer.next(data.acList)
-      });
-    socket.connect({ host, port });
-    console.log(socket);
-    return () => socket.destroy();
-  });
-};
+const PORT = 4000;
+const server = express();
+
+const { schema, resolver } = glue("src/graphql");
+console.log(resolver);
+const executableSchema = makeExecutableSchema({
+  typeDefs: schema,
+  resolvers: resolver
+});
+
+server.use("*", cors({ origin: "http://localhost:3000" }));
+
+server.use(
+  "/graphql",
+  bodyParser.json(),
+  graphqlExpress({
+    executableSchema
+  })
+);
+
+server.use(
+  "/graphiql",
+  graphiqlExpress({
+    endpointURL: "/graphql",
+    subscriptionsEndpoint: `ws://localhost:4000/subscriptions`
+  })
+);
+
+// We wrap the express server so that we can attach the WebSocket for subscriptions
+const ws = createServer(server);
+
+ws.listen(PORT, () => {
+  console.log(`GraphQL Server is now running on http://localhost:${PORT}`);
+  // Set up the WebSocket for handling GraphQL subscriptions
+  new SubscriptionServer(
+    {
+      execute,
+      subscribe,
+      schema
+    },
+    {
+      server: ws,
+      path: "/subscriptions"
+    }
+  );
+});

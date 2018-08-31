@@ -1,0 +1,27 @@
+type Query { notifications: [Notification] }
+type Notification { label: String }
+type Mutation { pushNotification(label: String!): Notification }
+input Filter {
+  ids: [String]
+  bounds: BoundingBox,
+}
+input BoundingBox {
+  latMin: Float, 
+  latMax: Float, 
+  lonMin: Float, 
+  lonMax: Float
+}
+type Update {
+  id: String,
+  lat: Float,
+  lon: Float,
+  time: Float,
+  payload: String
+}
+type UpdateBundle { 
+  hits: Int,
+  updates: [Update]
+}
+type Subscription { 
+  update(filter: Filter): UpdateBundle
+}
