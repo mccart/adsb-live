@@ -4,7 +4,7 @@ const Rx = require("rxjs/Rx");
 
 module.exports = ({
   host = "pub-vrs.adsbexchange.com",
-  port = 32015,
+  port = 32001,
   socketFactory = net.Socket
 } = {}) => {
   return new Rx.Observable(observer => {
