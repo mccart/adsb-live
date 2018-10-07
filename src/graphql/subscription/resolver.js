@@ -1,3 +1,4 @@
+import { interval } from "rxjs";
 import { Subject } from "rxjs/Subject";
 import adsbConnect from "../../adsbConnect";
 import { observerAsyncIterator } from "../../iterator";
@@ -35,6 +36,7 @@ export const filterAndBuffer = filter => {
       .filter(d => {
         return filter.ids ? filter.ids.includes(d.id) : true;
       })
+      //.sample(interval(500))  //Uncomment to reduce load on UI for testing
       .bufferTime(1000)
       .filter(d => d.length > 0);
 };
