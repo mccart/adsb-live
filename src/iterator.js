@@ -55,10 +55,12 @@ export function observerAsyncIterator(source) {
       return listening ? pullValue() : this.return();
     },
     return() {
+      console.log("Client disconnect");
       emptyQueue();
       return Promise.resolve({ value: undefined, done: true });
     },
     throw(error) {
+      console.log("Client error");
       emptyQueue();
 
       return Promise.reject(error);

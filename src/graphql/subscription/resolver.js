@@ -30,7 +30,7 @@ const source = adsbConnect()
 
 export const filterAndBuffer = filter => {
   filter = filter.filter || {};
-  console.log(filter);
+  console.log("Client subscribed to", filter);
   return source =>
     source
       .filter(d => {

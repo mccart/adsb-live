@@ -4,7 +4,7 @@ const Rx = require("rxjs/Rx");
 
 module.exports = ({
   host = "pub-vrs.adsbexchange.com",
-  port = 32001,
+  port = 32005,
   socketFactory = net.Socket
 } = {}) => {
   return new Rx.Observable(observer => {
@@ -30,9 +30,9 @@ module.exports = ({
         observer.error(err);
       })
       .on("node", {
-        acList: d => {
+        /*acList: d => {
           console.log("=================FULL MESSAGE=================");
-        },
+        },*/
         "acList.*": d => {
           p2 = p1;
           p1 = d;
