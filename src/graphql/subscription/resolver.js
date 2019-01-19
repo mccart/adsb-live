@@ -8,20 +8,23 @@ const source = adsbConnect()
   .retryWhen(errors => {
     return errors.delay(RETRY_INTERVAL);
   })
+  /*
   .filter(d => {
     return (
       d.hasOwnProperty("Lat") ||
-      d.hasOwnProperty("Galt") ||
+      d.hasOwnProperty("GAlt") ||
       d.hasOwnProperty("Alt") ||
       d.hasOwnProperty("Spd") ||
       d.hasOwnProperty("Trk")
     );
   })
+  */
   .map(d => {
     return {
       id: d.Icao,
       lat: d.Lat,
       lon: d.Long,
+      alt: d.Alt,
       time: Date.now(),
       payload: JSON.stringify(d)
     };

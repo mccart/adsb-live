@@ -1,0 +1,121 @@
+enum AcftField {
+  ModeS,
+  FirstCreated,
+  LastModified,
+  ModeSCountry,
+  Country,
+  Registration,
+  Manufacturer,
+  ICAOTypeCode,
+  Type,
+  SerialNo,
+  PopularName,
+  GenericName,
+  RegisteredOwners,
+  Interested,
+  UserTag
+}
+enum AcftTypeField {
+  Icao,
+  WakeTurbulence,
+  Description,
+  EnginePlacement,
+  Engines,
+  Model,
+  Manufacturer
+}
+enum Operation {
+  in,
+  exists,
+  startsWith,
+  endsWith,
+  contains,
+  eq,
+  gt,
+  gte,
+  lt,
+  lte
+}
+enum SortDirection {
+  ASC,
+  DESC
+}
+input AircraftQuery {
+  and: [AircraftQuery],
+  or: [AircraftQuery],
+  not: AircraftQuery,
+  field: AcftField,
+  op: Operation,
+  values: [String],
+}
+input AircraftTypeQuery {
+  and: [AircraftTypeQuery],
+  or: [AircraftTypeQuery],
+  not: AircraftTypeQuery,
+  field: AcftTypeField,
+  op: Operation,
+  values: [String],
+}
+
+input SortOption {
+  field: String!,
+  direction: SortDirection!,
+}
+input QueryOptions {
+  sort: [SortOption],
+  skip: Int,
+  take: Int
+}
+type Aircraft {
+  FirstCreated: String,
+  LastModified: String,
+  ModeS: String,
+  ModeSCountry: String,
+  Country: String,
+  Registration: String,
+  CurrentRegDate: String,
+  PreviousID: String,
+  FirstRegDate: String,
+  Status: String,
+  DeRegDate: String,
+  Manufacturer: String,
+  ICAOTypeCode: String,
+  Type: String,
+  SerialNo: String,
+  PopularName: String,
+  GenericName: String,
+  AircraftClass: String,
+  Engines: String,
+  OwnershipStatus: String,
+  RegisteredOwners: String,
+  MTOW: String,
+  TotalHours: String,
+  YearBuilt: String,
+  CofACategory: String,
+  CofAExpiry: String,
+  UserNotes: String,
+  Interested: Boolean,
+  UserTag: String,
+  InfoURL: String,
+  PictureURL1: String,
+  PictureURL2: String,
+  PictureURL3: String
+}
+type AircraftType {
+  Icao: String,
+  WakeTurbulenceId: Int,
+  WakeTurbulence: String,
+  SpeciesId: Int,
+  Description: String,
+  EnginePlacementId: Int,
+  EnginePlacement: String,
+  Engines: Int,
+  ModelId: Int,
+  Model: String,
+  Manufacturer: String
+}
+type Query { 
+  aircraft(query: AircraftQuery, options: QueryOptions): [Aircraft],
+  aircraftCount(query: AircraftQuery, options: QueryOptions): Int,
+  aircraftTypes(query: AircraftTypeQuery, options: QueryOptions): [AircraftType]
+}
