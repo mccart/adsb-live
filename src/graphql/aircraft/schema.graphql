@@ -13,7 +13,8 @@ enum AcftField {
   GenericName,
   RegisteredOwners,
   Interested,
-  UserTag
+  UserTag,
+  OperatorFlagCode,
 }
 enum AcftTypeField {
   Icao,
@@ -114,8 +115,16 @@ type AircraftType {
   Model: String,
   Manufacturer: String
 }
+type CodeBlock {
+  Country: String,
+  BitMask: Int,
+  SignificantBitMask: Int,
+  IsMilitary: Int
+}
 type Query { 
   aircraft(query: AircraftQuery, options: QueryOptions): [Aircraft],
   aircraftCount(query: AircraftQuery, options: QueryOptions): Int,
-  aircraftTypes(query: AircraftTypeQuery, options: QueryOptions): [AircraftType]
+  aircraftTypes(query: AircraftTypeQuery, options: QueryOptions): [AircraftType],
+  countries: [String],
+  codeBlocks: [CodeBlock]
 }

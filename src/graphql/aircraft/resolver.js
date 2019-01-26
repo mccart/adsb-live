@@ -4,6 +4,12 @@ const _ = require("lodash");
 const bs = new Database("./data/db/BaseStation.sqb");
 const sd = new Database("./data/db/StandingData.sqb");
 
+let countries = sd.prepare(`SELECT name FROM Country ORDER BY name`);
+countries.pluck();
+
+let codeBlocks = sd.prepare(
+  `Select Country, BitMask, SignificantBitMask, IsMilitary from CodeBlockView`
+);
 function toDate(v) {
   return `date(${v})`;
 }
@@ -163,7 +169,7 @@ export const resolver = {
     aircraft(root, query, context) {
       let [terms, values] = toQuery(query);
       const stmt = bs.prepare(`SELECT * FROM Aircraft ${terms}`);
-      return values.length > 0 ? stmt.all(values) : stmt.all();
+      return values && values.length > 0 ? stmt.all(values) : stmt.all();
     },
     aircraftCount(root, query, context) {
       let [terms, values] = toQuery(query);
@@ -171,12 +177,20 @@ export const resolver = {
       const stmt = bs.prepare(`SELECT COUNT(*) FROM Aircraft ${terms}`);
       console.log(stmt);
       console.log(stmt.all(values));
-      return (values.length > 0 ? stmt.all(values) : stmt.all())[0]["COUNT(*)"];
+      return (values && values.length > 0 ? stmt.all(values) : stmt.all())[0][
+        "COUNT(*)"
+      ];
     },
     aircraftTypes(root, query, context) {
       let [terms, values] = toQuery(query);
       const stmt = sd.prepare(`SELECT * FROM AircraftTypeView ${terms}`);
-      return values.length > 0 ? stmt.all(values) : stmt.all();
+      return values && values.length > 0 ? stmt.all(values) : stmt.all();
+    },
+    countries() {
+      return countries.all();
+    },
+    codeBlocks() {
+      return codeBlocks.all();
     }
   }
 };

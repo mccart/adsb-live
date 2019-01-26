@@ -2,6 +2,7 @@ import { interval } from "rxjs";
 import { Subject } from "rxjs/Subject";
 import adsbConnect from "../../adsbConnect";
 import { observerAsyncIterator } from "../../iterator";
+import * as search from "../../search";
 
 const RETRY_INTERVAL = 5000;
 const source = adsbConnect()
@@ -32,31 +33,35 @@ const source = adsbConnect()
   .share();
 
 export const filterAndBuffer = filter => {
-  filter = filter.filter || {};
-  console.log("Client subscribed to", filter);
+  let ids = undefined;
+  if (filter.acftType) {
+    let types = search.aircraftTypes(filter.acftType).map(a => a.Icao);
+    if (types.length > 0) {
+      let typeFilter = { field: "ICAOTypeCode", op: "in", values: types };
+      if (filter.acft) {
+        filter.acft = { and: [filter.acft, typeFilter] };
+      } else {
+        filter.acft = typeFilter;
+      }
+    }
+  }
+  if (filter.acft) {
+    ids = search.aircraft(filter.acft).map(a => a.ModeS);
+  }
+  console.log("Client subscribed with filter", filter);
   return source =>
     source
       .filter(d => {
-        return filter.ids ? filter.ids.includes(d.id) : true;
+        return ids ? ids.includes(d.id) : true;
       })
-      //.sample(interval(500))  //Uncomment to reduce load on UI for testing
       .bufferTime(1000)
-      .filter(d => d.length > 0);
+      .filter(d => {
+        console.log(d.length);
+        return d.length > 0;
+      });
 };
 
 export const resolver = {
-  Query: { notifications: () => notifications },
-  Mutation: {
-    pushNotification: (root, args) => {
-      const newNotification = { label: args.label };
-      notifications.push(newNotification);
-      pubsub.publish(NOTIFICATION_SUBSCRIPTION_TOPIC, {
-        newNotification: newNotification
-      });
-
-      return newNotification;
-    }
-  },
   Subscription: {
     update: {
       resolve: (updates, args, context, info) => {
@@ -64,6 +69,7 @@ export const resolver = {
         return { hits, updates };
       },
       subscribe: (args, variables, context, info) => {
+        console.log(args, variables, context, info);
         return observerAsyncIterator(source.pipe(filterAndBuffer(variables)));
       }
     }
