@@ -2,7 +2,7 @@ import { interval } from "rxjs";
 import { Subject } from "rxjs/Subject";
 import adsbConnect from "../../adsbConnect";
 import { observerAsyncIterator } from "../../iterator";
-import * as search from "../../search";
+import search from "../../search";
 
 const RETRY_INTERVAL = 5000;
 const source = adsbConnect()
@@ -34,6 +34,7 @@ const source = adsbConnect()
 
 export const filterAndBuffer = filter => {
   let ids = undefined;
+  console.log("Filter", filter);
   if (filter.acftType) {
     let types = search.aircraftTypes(filter.acftType).map(a => a.Icao);
     if (types.length > 0) {
@@ -46,13 +47,15 @@ export const filterAndBuffer = filter => {
     }
   }
   if (filter.acft) {
-    ids = search.aircraft(filter.acft).map(a => a.ModeS);
+    ids = search.aircraft(filter.acft).reduce((ids, a) => {
+      ids.set(a.ModeS, true);
+      return ids;
+    }, new Map());
   }
-  console.log("Client subscribed with filter", filter);
   return source =>
     source
       .filter(d => {
-        return ids ? ids.includes(d.id) : true;
+        return ids ? ids.get(d.id) : true;
       })
       .bufferTime(1000)
       .filter(d => {
@@ -69,7 +72,6 @@ export const resolver = {
         return { hits, updates };
       },
       subscribe: (args, variables, context, info) => {
-        console.log(args, variables, context, info);
         return observerAsyncIterator(source.pipe(filterAndBuffer(variables)));
       }
     }
