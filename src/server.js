@@ -1,47 +1,34 @@
 const express = require("express");
-const bodyParser = require("body-parser");
-const { graphqlExpress, graphiqlExpress } = require("apollo-server-express");
-const { makeExecutableSchema } = require("graphql-tools");
-const { PubSub } = require("graphql-subscriptions");
 const cors = require("cors");
-const { execute, subscribe } = require("graphql");
+const { ApolloServer, makeExecutableSchema } = require("apollo-server-express");
 const { createServer } = require("http");
-const { SubscriptionServer } = require("subscriptions-transport-ws");
-import glue from "schemaglue";
 
+import glue from "schemaglue";
 const { schema, resolver } = glue("src/graphql");
 const executableSchema = makeExecutableSchema({
   typeDefs: schema,
   resolvers: resolver
 });
 
+const PORT = 4000;
 const app = express();
-app.use("*", cors({ origin: `http://localhost:3000` }));
-app.use(
-  "/graphql",
-  bodyParser.json(),
-  graphqlExpress({ schema: executableSchema })
-);
-app.use(
-  "/graphiql",
-  graphiqlExpress({
-    endpointURL: "/graphql",
-    subscriptionsEndpoint: `ws://localhost:4000/subscriptions`
-  })
-);
-const ws = createServer(app);
-ws.listen(4000, () => {
-  console.log("Go to http://localhost:4000/graphiql to run queries!");
+// app.use("*", cors({ origin: `http://localhost:3000` }));
+app.use(cors());
 
-  new SubscriptionServer(
-    {
-      execute,
-      subscribe,
-      schema: executableSchema
-    },
-    {
-      server: ws,
-      path: "/subscriptions"
-    }
+const apollo = new ApolloServer({
+  schema: executableSchema,
+  path: "/graphql",
+  subscriptions: {
+    path: "/subscriptions"
+  }
+});
+apollo.applyMiddleware({ app });
+
+const ws = createServer(app);
+apollo.installSubscriptionHandlers(ws);
+ws.listen(PORT, () => {
+  console.log(`Server ready at http://localhost:${PORT}${apollo.graphqlPath}`);
+  console.log(
+    `Subscriptions ready at ws://localhost:${PORT}${apollo.subscriptionsPath}`
   );
 });
